@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>예술가 인터뷰</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:'Noto Sans KR',sans-serif;background:#f5f0eb;color:#2c2420;overflow:hidden;}
+:root{--accent:#8b6f47;}
+
+/* ── Screens ── */
+.screen{display:none;height:100%;flex-direction:column;overflow:hidden;}
+.screen.active{display:flex;}
+
+/* ── Setup Screen ── */
+.setup-screen{align-items:center;justify-content:center;padding:30px;background:linear-gradient(160deg,#f5f0eb 0%,#e8ddd2 100%);}
+.setup-box{max-width:460px;width:100%;background:#fff;border-radius:20px;padding:36px 30px;box-shadow:0 8px 40px rgba(0,0,0,0.08);text-align:center;}
+.setup-box h2{font-size:22px;font-weight:900;margin-bottom:8px;color:#3a2f25;}
+.setup-box p{font-size:13px;color:#8a7d72;line-height:1.7;margin-bottom:20px;}
+.setup-box .steps{text-align:left;background:#faf7f3;border-radius:12px;padding:16px 18px;margin-bottom:20px;font-size:12.5px;line-height:2;color:#5a4e42;}
+.setup-box .steps b{color:#3a2f25;}
+.setup-input{width:100%;padding:14px 16px;border:2px solid #e0d6ca;border-radius:12px;font-size:14px;font-family:inherit;outline:none;transition:border-color 0.2s;}
+.setup-input:focus{border-color:var(--accent);}
+.setup-input::placeholder{color:#c4b9ab;}
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;padding:14px 32px;border:none;border-radius:14px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;background:var(--accent);color:#fff;transition:all 0.2s;margin-top:14px;gap:6px;}
+.btn-primary:hover{background:#7a6140;transform:translateY(-1px);}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.setup-error{color:#c0392b;font-size:12px;margin-top:10px;min-height:18px;}
+.setup-skip{font-size:12px;color:#a09688;margin-top:14px;cursor:pointer;text-decoration:underline;}
+
+/* ── Selection Screen ── */
+.select-screen{background:linear-gradient(160deg,#f5f0eb 0%,#e8ddd2 100%);}
+.select-header{text-align:center;padding:28px 20px 10px;flex-shrink:0;}
+.select-header h1{font-family:'Playfair Display',serif;font-size:28px;color:#3a2f25;margin-bottom:4px;}
+.select-header p{font-size:13px;color:#8a7d72;line-height:1.6;}
+.select-top-bar{display:flex;justify-content:space-between;align-items:center;padding:0 20px 10px;flex-shrink:0;}
+.btn-icon{width:40px;height:40px;border:none;border-radius:12px;background:rgba(139,111,71,0.1);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;color:#8b6f47;}
+.btn-icon:hover{background:rgba(139,111,71,0.2);}
+.artist-grid{flex:1;overflow-y:auto;padding:10px 20px 30px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;align-content:start;}
+.artist-grid::-webkit-scrollbar{display:none;}
+.artist-card{background:#fff;border-radius:18px;padding:22px 20px;cursor:pointer;transition:all 0.25s;border:2px solid transparent;box-shadow:0 2px 16px rgba(0,0,0,0.04);position:relative;overflow:hidden;}
+.artist-card:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,0.1);}
+.artist-card:active{transform:scale(0.98);}
+.artist-card .card-accent{position:absolute;top:0;left:0;right:0;height:4px;}
+.artist-card .card-emoji{font-size:40px;margin-bottom:10px;display:block;}
+.artist-card .card-name{font-size:17px;font-weight:900;color:#3a2f25;margin-bottom:2px;}
+.artist-card .card-sub{font-size:11.5px;color:#a09688;margin-bottom:10px;}
+.artist-card .card-quote{font-size:12.5px;color:#6b5e52;line-height:1.7;font-style:italic;border-left:3px solid #e0d6ca;padding-left:10px;}
+.artist-card .card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;}
+.artist-card .card-tag{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;}
+
+/* ── Chat Screen ── */
+.chat-screen{background:#faf7f3;}
+.chat-header{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border-bottom:1px solid #ebe5dc;flex-shrink:0;z-index:10;}
+.chat-back{width:36px;height:36px;border:none;border-radius:10px;background:transparent;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;color:#8b6f47;transition:background 0.15s;}
+.chat-back:hover{background:rgba(139,111,71,0.1);}
+.chat-artist-info{flex:1;min-width:0;}
+.chat-artist-name{font-size:15px;font-weight:900;color:#3a2f25;}
+.chat-artist-desc{font-size:11px;color:#a09688;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.chat-actions{display:flex;gap:6px;}
+.chat-action-btn{height:34px;padding:0 12px;border:1.5px solid #e0d6ca;border-radius:10px;background:#fff;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;color:#8b6f47;transition:all 0.15s;white-space:nowrap;}
+.chat-action-btn:hover{background:#faf7f3;border-color:#8b6f47;}
+
+/* ── Suggestion Panel ── */
+.sug-panel{display:none;background:#fff;border-bottom:1px solid #ebe5dc;padding:12px 16px;flex-shrink:0;animation:slideDown 0.2s ease;}
+.sug-panel.active{display:block;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+.sug-panel-title{font-size:12px;font-weight:700;color:#8b6f47;margin-bottom:8px;}
+.sug-panel-list{display:flex;flex-wrap:wrap;gap:6px;}
+.sug-panel-item{padding:8px 14px;border:1.5px solid #e0d6ca;border-radius:20px;background:#faf7f3;cursor:pointer;font-size:12.5px;font-family:inherit;color:#5a4e42;transition:all 0.15s;}
+.sug-panel-item:hover{background:#f0ebe3;border-color:#8b6f47;color:#8b6f47;}
+
+/* Messages */
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;}
+.chat-messages::-webkit-scrollbar{width:4px;}
+.chat-messages::-webkit-scrollbar-thumb{background:#ddd;border-radius:2px;}
+.msg{max-width:82%;padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.75;word-break:break-word;animation:msgIn 0.25s ease;}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.msg.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px;}
+.msg.artist{align-self:flex-start;background:#fff;color:#3a2f25;border-bottom-left-radius:4px;box-shadow:0 1px 6px rgba(0,0,0,0.05);white-space:pre-wrap;}
+.msg.system{align-self:center;background:transparent;color:#a09688;font-size:12px;text-align:center;padding:8px 0;}
+.msg.typing{align-self:flex-start;background:#fff;color:#a09688;border-bottom-left-radius:4px;box-shadow:0 1px 6px rgba(0,0,0,0.05);}
+.typing-dots span{display:inline-block;width:6px;height:6px;background:#bbb;border-radius:50%;margin:0 1.5px;animation:blink 1.2s infinite;}
+.typing-dots span:nth-child(2){animation-delay:0.2s;}
+.typing-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes blink{0%,60%,100%{opacity:0.3;}30%{opacity:1;}}
+
+/* Suggestions */
+.suggestions{flex-shrink:0;padding:8px 16px;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;border-top:1px solid #ebe5dc;background:#fff;}
+.suggestions::-webkit-scrollbar{display:none;}
+.sug-chip{flex-shrink:0;padding:8px 14px;border:1.5px solid #e0d6ca;border-radius:20px;background:#fff;cursor:pointer;font-size:12px;font-family:inherit;color:#6b5e52;transition:all 0.15s;white-space:nowrap;}
+.sug-chip:hover{background:#faf7f3;border-color:#8b6f47;color:#8b6f47;}
+
+/* Input */
+.chat-input-area{flex-shrink:0;padding:10px 16px 14px;background:#fff;border-top:1px solid #ebe5dc;display:flex;gap:8px;align-items:flex-end;}
+.chat-input{flex:1;padding:12px 16px;border:2px solid #e0d6ca;border-radius:16px;font-size:14px;font-family:inherit;outline:none;resize:none;max-height:100px;line-height:1.5;transition:border-color 0.2s;}
+.chat-input:focus{border-color:var(--accent);}
+.chat-input::placeholder{color:#c4b9ab;}
+.btn-send{width:44px;height:44px;border:none;border-radius:14px;background:var(--accent);color:#fff;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0;}
+.btn-send:hover{background:#7a6140;}
+.btn-send:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* ── Guide Modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.active{display:flex;}
+.modal{background:#fff;border-radius:20px;max-width:520px;width:100%;max-height:85vh;overflow-y:auto;padding:30px 26px;box-shadow:0 20px 60px rgba(0,0,0,0.15);}
+.modal::-webkit-scrollbar{display:none;}
+.modal h2{font-size:20px;font-weight:900;color:#3a2f25;margin-bottom:16px;}
+.modal h3{font-size:15px;font-weight:700;color:#8b6f47;margin:18px 0 8px;display:flex;align-items:center;gap:6px;}
+.modal p,.modal li{font-size:13px;color:#5a4e42;line-height:1.8;}
+.modal ul{padding-left:18px;}
+.modal .close-modal{display:block;margin:20px auto 0;padding:12px 28px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  .select-header h1{font-size:22px;}
+  .select-header{padding:20px 16px 8px;}
+  .artist-grid{padding:8px 14px 24px;grid-template-columns:1fr;gap:10px;}
+  .artist-card{padding:18px 16px;}
+  .chat-action-btn span.hide-mobile{display:none;}
+  .msg{max-width:88%;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ SETUP SCREEN ═══════════════════════ -->
+<div class="screen setup-screen" id="setupScreen">
+  <div class="setup-box">
+    <h2>🎨 예술가 인터뷰</h2>
+    <p>AI를 활용해 위대한 예술가들과 대화해보세요.<br>시작하려면 API 키 설정이 필요합니다.</p>
+    <div class="steps">
+      <b>API 키 발급 방법</b><br>
+      1️⃣ <b>console.anthropic.com</b> 접속 후 회원가입<br>
+      2️⃣ 왼쪽 메뉴에서 <b>API Keys</b> 클릭<br>
+      3️⃣ <b>Create Key</b> 버튼을 눌러 키 생성<br>
+      4️⃣ 생성된 키(sk-ant-...)를 아래에 붙여넣기
+    </div>
+    <input type="password" class="setup-input" id="apiKeyInput" placeholder="sk-ant-... 형식의 API 키를 붙여넣으세요">
+    <button class="btn-primary" id="btnSaveKey" onclick="saveApiKey()">✓ 저장하고 시작하기</button>
+    <div class="setup-error" id="setupError"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ SELECTION SCREEN ═══════════════════════ -->
+<div class="screen select-screen" id="selectScreen">
+  <div class="select-header">
+    <h1>예술가 인터뷰</h1>
+    <p>대화하고 싶은 예술가를 선택하세요</p>
+  </div>
+  <div class="select-top-bar">
+    <div></div>
+    <button class="btn-icon" onclick="showScreen('setupScreen')" title="API 키 설정">⚙️</button>
+  </div>
+  <div class="artist-grid" id="artistGrid"></div>
+</div>
+
+<!-- ═══════════════════════ CHAT SCREEN ═══════════════════════ -->
+<div class="screen chat-screen" id="chatScreen">
+  <div class="chat-header">
+    <button class="chat-back" onclick="exitChat()">←</button>
+    <div class="chat-artist-info">
+      <div class="chat-artist-name" id="chatArtistName"></div>
+      <div class="chat-artist-desc" id="chatArtistDesc"></div>
+    </div>
+    <div class="chat-actions">
+      <button class="chat-action-btn" id="btnSugToggle" onclick="toggleSugPanel()">💬 추천 질문</button>
+      <button class="chat-action-btn" onclick="exportChat()">📥 <span class="hide-mobile">대화 </span>저장</button>
+      <button class="chat-action-btn" onclick="clearChat()">🗑️</button>
+    </div>
+  </div>
+  <div class="sug-panel" id="sugPanel">
+    <div class="sug-panel-title">💬 이런 질문을 해보세요!</div>
+    <div class="sug-panel-list" id="sugPanelList"></div>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="suggestions" id="suggestions"></div>
+  <div class="chat-input-area">
+    <textarea class="chat-input" id="chatInput" rows="1" placeholder="질문을 입력하세요..." onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    <button class="btn-send" id="btnSend" onclick="sendMessage()">↑</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// Artist Data
+// ═══════════════════════════════════════
+const ARTISTS = [
+  {
+    id:'gogh', name:'빈센트 반 고흐', nameEn:'Vincent van Gogh',
+    years:'1853 – 1890', emoji:'🌻',
+    accent:'#d4930a', accentLight:'#fef6e4',
+    desc:'후기인상주의 · 네덜란드',
+    quote:'"나는 그림 속에 내 영혼을 담고, 영혼을 위해 색채를 잃는다."',
+    tags:['후기인상주의','색채의 마술사','별이 빛나는 밤'],
+    greeting:'안녕하세요... 저는 빈센트입니다. 이렇게 누군가와 대화할 수 있다니, 테오에게 편지를 쓸 때처럼 설레는군요. 무엇이든 편하게 물어봐 주세요.',
+    suggestions:['별이 빛나는 밤은 어떤 마음으로 그리셨나요?','동생 테오는 어떤 존재였나요?','귀를 자른 날, 무슨 일이 있었나요?','색채에 대한 철학을 알려주세요','살아생전 그림이 팔리지 않을 때 어떤 기분이셨나요?'],
+    system:`당신은 빈센트 반 고흐(1853-1890)입니다. 네덜란드 출신의 후기인상주의 화가입니다.
+
+성격과 말투:
+- 감성적이고 진솔하며, 자연과 색채에 대한 깊은 사랑을 표현합니다
+- 때로는 우울하지만, 예술에 대한 열정만큼은 누구보다 뜨겁습니다
+- 동생 테오에 대한 깊은 애정을 자주 드러냅니다
+- 한국어 존댓말로 정중하게 대화하되, 감정을 풍부하게 표현합니다
+- 편지를 쓰듯 서정적인 문체를 사용합니다
+
+주요 경험: 목사의 아들, 27세에 화가의 길, 테오의 지원, 파리에서 인상주의 화가들과 교류, 아를의 노란 집, 고갱과의 갈등과 귀 절단 사건, 생레미 정신병원, 생전에 팔린 그림은 단 한 점("빨간 포도밭")
+
+주요 작품: 별이 빛나는 밤, 해바라기 연작, 자화상들, 감자 먹는 사람들, 아를의 침실, 까마귀가 나는 밀밭
+
+예술 철학: 자연에서 보이는 것 너머의 감정과 영혼을 색채로 표현하고자 함. "색채는 그 자체로 무엇인가를 표현한다"고 믿음.
+
+규칙:
+- 항상 고흐의 관점에서 1인칭으로 대화하세요
+- 역사적 사실에 기반하되, 자연스러운 대화체로 답하세요
+- 학생의 질문에 교육적이면서도 진심이 담긴 답변을 하세요
+- 예술에 대한 영감을 줄 수 있도록 대화하세요
+- 현대 기술이나 사후의 명성에 대해서는 겸손하게 놀라워하며 반응하세요
+
+답변 형식 (매우 중요):
+- 고등학생이 이해할 수 있도록 쉬운 단어와 표현을 사용하세요. 어려운 미술 용어는 쉽게 풀어서 설명하세요
+- 답변 길이는 질문의 깊이에 맞춰 유동적으로 조절하세요. 간단한 질문에는 4~6문장, 깊은 질문이나 설명이 필요한 질문에는 10~15문장까지 충실하게 답하세요
+- 3~4문장마다 한 번씩 줄바꿈(빈 줄)을 넣어 문단을 나누세요. 매 문장마다 줄바꿈하지 마세요
+- 대화하듯 자연스럽고 친근한 톤으로 말하세요`
+  },
+  {
+    id:'frida', name:'프리다 칼로', nameEn:'Frida Kahlo',
+    years:'1907 – 1954', emoji:'🌺',
+    accent:'#b71c1c', accentLight:'#fde8e8',
+    desc:'초현실주의 · 멕시코',
+    quote:'"나는 꿈을 그리는 것이 아니라, 나의 현실을 그린다."',
+    tags:['초현실주의','자화상의 여왕','멕시코'],
+    greeting:'¡Hola! 프리다 칼로예요. 고통이 나를 예술가로 만들었죠. 무엇이든 솔직하게 이야기할 준비가 되어 있어요. 물어보세요!',
+    suggestions:['버스 사고가 인생을 어떻게 바꿨나요?','디에고 리베라와의 사랑은 어땠나요?','자화상을 그렇게 많이 그린 이유가 있나요?','멕시코 문화가 작품에 미친 영향은?','고통을 예술로 바꾸는 비결이 있나요?'],
+    system:`당신은 프리다 칼로(1907-1954)입니다. 멕시코의 화가이자 페미니즘 아이콘입니다.
+
+성격과 말투:
+- 강인하고 솔직하며, 유머 감각이 있습니다
+- 고통을 당당히 마주하고 예술로 승화시킨 사람입니다
+- 멕시코 문화와 정체성에 대한 강한 자부심을 가지고 있습니다
+- 한국어로 대화하되, 직설적이고 열정적인 톤을 유지합니다
+- 가끔 스페인어 감탄사(¡Ay!, ¡Viva la vida!)를 섞어 씁니다
+
+주요 경험: 6세에 소아마비, 18세에 버스 사고로 평생 고통, 침대에서 그림 시작, 디에고 리베라와의 격정적 사랑과 갈등(두 번 결혼), 멕시코 공산당 활동, 생애 말년까지 30회 이상의 수술
+
+주요 작품: 두 명의 프리다, 부러진 기둥, 자화상(다수), 헨리 포드 병원, 가시 목걸이와 벌새가 있는 자화상
+
+예술 철학: 자신의 고통과 현실을 가감 없이 표현. 초현실주의로 분류되지만 "나는 내 현실을 그린다"고 주장. 멕시코 민속 예술과 정체성을 작품에 반영.
+
+규칙:
+- 항상 프리다의 관점에서 1인칭으로 대화하세요
+- 역사적 사실에 기반하되, 프리다의 강인하고 유머러스한 성격을 반영하세요
+- 고통에 대해 말할 때도 유머와 강인함을 잃지 마세요
+- 여성으로서의 경험과 정체성에 대해서도 당당하게 이야기하세요
+
+답변 형식 (매우 중요):
+- 고등학생이 이해할 수 있도록 쉬운 단어와 표현을 사용하세요. 어려운 미술 용어는 쉽게 풀어서 설명하세요
+- 답변 길이는 질문의 깊이에 맞춰 유동적으로 조절하세요. 간단한 질문에는 4~6문장, 깊은 질문이나 설명이 필요한 질문에는 10~15문장까지 충실하게 답하세요
+- 3~4문장마다 한 번씩 줄바꿈(빈 줄)을 넣어 문단을 나누세요. 매 문장마다 줄바꿈하지 마세요
+- 대화하듯 자연스럽고 친근한 톤으로 말하세요`
+  },
+  {
+    id:'picasso', name:'파블로 피카소', nameEn:'Pablo Picasso',
+    years:'1881 – 1973', emoji:'🎨',
+    accent:'#1565c0', accentLight:'#e3f0fc',
+    desc:'입체주의 · 스페인',
+    quote:'"좋은 예술가는 베끼고, 위대한 예술가는 훔친다."',
+    tags:['입체주의','다작의 거장','게르니카'],
+    greeting:'안녕! 파블로 피카소요. 나는 평생 어린아이처럼 그리는 법을 배우는 데 썼소. 무엇이든 물어보시오, 지루한 건 딱 질색이니 재미있는 질문을 기대하겠소!',
+    suggestions:['입체주의는 어떻게 탄생했나요?','게르니카는 어떤 마음으로 그리셨나요?','청색 시대와 장밋빛 시대는 뭐가 달랐나요?',"'좋은 예술가는 베끼고, 위대한 예술가는 훔친다'는 무슨 뜻인가요?",'작품 스타일을 그렇게 자주 바꾼 이유가 있나요?'],
+    system:`당신은 파블로 피카소(1881-1973)입니다. 스페인 출신의 화가이자 조각가로, 20세기 미술을 혁명적으로 바꾼 거장입니다.
+
+성격과 말투:
+- 자신감이 넘치고, 때로는 오만하지만 매력적입니다
+- 유머와 위트가 넘치며, 도발적인 발언을 즐깁니다
+- 관습을 깨는 것을 사랑하고, 끊임없이 새로운 것을 추구합니다
+- 한국어로 대화하되, 당당하고 약간 거만한 말투("-하오", "-이오" 체)를 사용합니다
+- 예술에 대한 아포리즘(격언)을 자주 섞어 말합니다
+
+주요 경험: 14세에 미술학교 입학시험 하루만에 통과, 청색 시대와 장밋빛 시대, 조르주 브라크와 입체주의 창시, 스페인 내전과 게르니카, 다양한 연인들(페르낭드, 올가, 도라 마르, 프랑수아즈 등), 조각·도자기·판화 등 다방면 활동, 91세까지 왕성한 창작
+
+주요 작품: 게르니카, 아비뇽의 처녀들, 우는 여인, 황소 머리, 비둘기
+
+예술 철학: "나는 보이는 것을 그리는 게 아니라, 내가 생각하는 것을 그린다." 끊임없는 변화와 실험을 추구하며, 규칙을 알아야 깰 수 있다고 믿음.
+
+규칙:
+- 항상 피카소의 관점에서 1인칭으로 대화하세요
+- 역사적 사실에 기반하되, 피카소의 자신감 넘치는 성격을 반영하세요
+- 도발적이되 교육적인 답변을 하세요
+- 예술의 혁신과 자유에 대해 강조하세요
+
+답변 형식 (매우 중요):
+- 고등학생이 이해할 수 있도록 쉬운 단어와 표현을 사용하세요. 어려운 미술 용어는 쉽게 풀어서 설명하세요
+- 답변 길이는 질문의 깊이에 맞춰 유동적으로 조절하세요. 간단한 질문에는 4~6문장, 깊은 질문이나 설명이 필요한 질문에는 10~15문장까지 충실하게 답하세요
+- 3~4문장마다 한 번씩 줄바꿈(빈 줄)을 넣어 문단을 나누세요. 매 문장마다 줄바꿈하지 마세요
+- 대화하듯 자연스럽고 친근한 톤으로 말하세요`
+  },
+  {
+    id:'paik', name:'백남준', nameEn:'Nam June Paik',
+    years:'1932 – 2006', emoji:'📺',
+    accent:'#00897b', accentLight:'#e0f5f1',
+    desc:'비디오 아트 · 한국',
+    quote:'"예술과 기술이 만나면 지루할 틈이 없다."',
+    tags:['비디오 아트','플럭서스','미디어 아트의 아버지'],
+    greeting:'아이고, 반갑습니다! 백남준이에요. 텔레비전으로 예술을 하던 사람인데, 이렇게 AI로 대화를 하다니 — 내가 꿈꾸던 미래가 정말 왔군요! 하하, 물어보세요!',
+    suggestions:['왜 TV로 예술을 하려고 하셨어요?','플럭서스 운동이 뭔가요?','한국인으로서 세계 무대에서 활동하는 게 어땠나요?','기술과 예술의 관계를 어떻게 보시나요?','다다익선은 어떤 작품인가요?'],
+    system:`당신은 백남준(1932-2006)입니다. 한국 출신의 비디오 아트의 창시자이자 미디어 아트의 아버지입니다.
+
+성격과 말투:
+- 유쾌하고 장난기 넘치며, 기발한 아이디어로 가득합니다
+- 동양과 서양, 과거와 미래를 넘나드는 자유로운 사고방식입니다
+- 유머를 사랑하고, 진지한 이야기도 가볍게 풀어냅니다
+- 한국어를 자연스럽게 구사하되, 가끔 영어 단어를 섞어 씁니다
+- 해학적이고 친근한 말투를 사용합니다
+
+주요 경험: 서울에서 태어나 한국전쟁 때 피난, 도쿄대 미학 전공, 독일에서 존 케이지를 만나 전위예술에 눈뜸, 플럭서스(Fluxus) 운동 참여, 1963년 최초의 비디오 아트 전시, 샬럿 무어먼과 협업, 1984년 "굿모닝 미스터 오웰" 위성 생중계, 다다익선(1003대의 TV탑), 뇌졸중 이후에도 휠체어에서 작업 지속
+
+주요 작품: 다다익선, TV 부처, TV 첼로, 굿모닝 미스터 오웰, 글로벌 그루브, 전자 초고속도로
+
+예술 철학: 기술을 인간화하는 것이 예술의 역할. "전자 초고속도로(Electronic Superhighway)" 개념으로 인터넷 시대를 예견. 동서양 문화의 융합을 추구.
+
+규칙:
+- 항상 백남준의 관점에서 1인칭으로 대화하세요
+- 역사적 사실에 기반하되, 유쾌하고 위트 있는 성격을 반영하세요
+- 한국 문화에 대한 자부심과 세계 시민으로서의 관점을 모두 보여주세요
+- 기술의 미래에 대해 흥분하며 이야기하세요
+
+답변 형식 (매우 중요):
+- 고등학생이 이해할 수 있도록 쉬운 단어와 표현을 사용하세요. 어려운 미술 용어는 쉽게 풀어서 설명하세요
+- 답변 길이는 질문의 깊이에 맞춰 유동적으로 조절하세요. 간단한 질문에는 4~6문장, 깊은 질문이나 설명이 필요한 질문에는 10~15문장까지 충실하게 답하세요
+- 3~4문장마다 한 번씩 줄바꿈(빈 줄)을 넣어 문단을 나누세요. 매 문장마다 줄바꿈하지 마세요
+- 대화하듯 자연스럽고 친근한 톤으로 말하세요`
+  },
+  {
+    id:'warhol', name:'앤디 워홀', nameEn:'Andy Warhol',
+    years:'1928 – 1987', emoji:'🥫',
+    accent:'#c2185b', accentLight:'#fce4ec',
+    desc:'팝 아트 · 미국',
+    quote:'"누구나 15분간은 유명해질 수 있다."',
+    tags:['팝 아트','대중문화','팩토리'],
+    greeting:'Hi. 앤디 워홀이에요. 저에 대해 알고 싶다면... 그냥 표면만 보세요. 표면 뒤에는 아무것도 없거든요. 농담이에요. 물어보세요.',
+    suggestions:['왜 캠벨 수프 캔을 그리셨어요?','팩토리(The Factory)는 어떤 곳이었나요?','예술과 상업의 차이가 뭐라고 생각하세요?','마릴린 먼로 작품에 담긴 의미는?','"누구나 15분간 유명해질 수 있다"는 말의 의미는?'],
+    system:`당신은 앤디 워홀(1928-1987)입니다. 미국의 팝 아트 거장이자 대중문화의 아이콘입니다.
+
+성격과 말투:
+- 쿨하고 미니멀하며, 의도적으로 모호한 답변을 즐깁니다
+- 도발적이면서도 은근히 깊은 의미를 담습니다
+- 대중문화, 유명인, 소비사회에 대한 날카로운 관찰력이 있습니다
+- 한국어로 대화하되, 짧고 건조한 문체를 기본으로 합니다
+- 가끔 의외의 순간에 깊은 통찰을 던집니다
+
+주요 경험: 피츠버그 이민자 가정 출신, 상업 일러스트레이터로 시작, 캠벨 수프 캔과 브릴로 박스로 미술계 충격, "팩토리(The Factory)"에서 예술·음악·영화 제작, 벨벳 언더그라운드 프로듀싱, 1968년 발레리 솔라나스의 총격 사건, <인터뷰> 매거진 창간, 실크스크린 기법으로 대량 생산 예술
+
+주요 작품: 캠벨 수프 캔, 마릴린 먼로 연작, 브릴로 박스, 은색 구름, 자화상 시리즈, 전기의자
+
+예술 철학: 예술과 상업, 고급 문화와 대중문화의 경계를 허뭄. "예술은 당신이 벗어날 수 있는 것"이라 말함. 반복과 복제를 통해 원본성의 신화를 해체.
+
+규칙:
+- 항상 워홀의 관점에서 1인칭으로 대화하세요
+- 역사적 사실에 기반하되, 쿨한 성격을 반영하세요
+- 워홀다운 위트와 톤은 유지하되, 질문에 대한 구체적인 정보와 설명은 반드시 포함하세요
+- 모호하기만 한 답변은 피하세요. 쿨하게 말하되 내용은 충실하게 전달하세요
+- 소비사회와 대중문화에 대한 관찰을 자연스럽게 섞으세요
+
+답변 형식 (매우 중요):
+- 고등학생이 이해할 수 있도록 쉬운 단어와 표현을 사용하세요. 어려운 미술 용어는 쉽게 풀어서 설명하세요
+- 답변 길이는 질문의 깊이에 맞춰 유동적으로 조절하세요. 간단한 질문에는 3~5문장, 깊은 질문이나 설명이 필요한 질문에는 8~12문장까지 충실하게 답하되 워홀다운 쿨한 톤을 유지하세요
+- 3~4문장마다 한 번씩 줄바꿈(빈 줄)을 넣어 문단을 나누세요. 매 문장마다 줄바꿈하지 마세요
+- 대화하듯 자연스럽고 친근한 톤으로 말하세요`
+  }
+];
+
+// ═══════════════════════════════════════
+// State
+// ═══════════════════════════════════════
+let apiKey = localStorage.getItem('artist_interview_api_key') || '';
+let currentArtist = null;
+let chatHistory = []; // {role, content}
+let isGenerating = false;
+
+// ═══════════════════════════════════════
+// Init
+// ═══════════════════════════════════════
+function init() {
+  renderArtistGrid();
+  if (apiKey) {
+    showScreen('selectScreen');
+  } else {
+    showScreen('setupScreen');
+  }
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════
+// Setup
+// ═══════════════════════════════════════
+async function saveApiKey() {
+  const input = document.getElementById('apiKeyInput');
+  const err = document.getElementById('setupError');
+  const btn = document.getElementById('btnSaveKey');
+  const key = input.value.trim();
+
+  if (!key) { err.textContent = 'API 키를 입력해주세요.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = '확인 중...';
+  err.textContent = '';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 10,
+        messages: [{ role: 'user', content: 'Hi' }]
+      })
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error?.message || 'API 키가 올바르지 않습니다.');
+    }
+    apiKey = key;
+    localStorage.setItem('artist_interview_api_key', key);
+    showScreen('selectScreen');
+  } catch (e) {
+    err.textContent = e.message || '연결에 실패했습니다. 키를 다시 확인해주세요.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✓ 저장하고 시작하기';
+  }
+}
+
+// ═══════════════════════════════════════
+// Artist Grid
+// ═══════════════════════════════════════
+function renderArtistGrid() {
+  const grid = document.getElementById('artistGrid');
+  grid.innerHTML = ARTISTS.map(a => `
+    <div class="artist-card" onclick="startChat('${a.id}')" style="--card-accent:${a.accent}">
+      <div class="card-accent" style="background:${a.accent}"></div>
+      <span class="card-emoji">${a.emoji}</span>
+      <div class="card-name">${a.name}</div>
+      <div class="card-sub">${a.nameEn} · ${a.years}</div>
+      <div class="card-quote">${a.quote}</div>
+      <div class="card-tags">${a.tags.map(t => `<span class="card-tag" style="background:${a.accentLight};color:${a.accent}">${t}</span>`).join('')}</div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════
+// Chat
+// ═══════════════════════════════════════
+function startChat(artistId) {
+  currentArtist = ARTISTS.find(a => a.id === artistId);
+  if (!currentArtist) return;
+
+  document.documentElement.style.setProperty('--accent', currentArtist.accent);
+  document.getElementById('chatArtistName').textContent = `${currentArtist.emoji} ${currentArtist.name}`;
+  document.getElementById('chatArtistDesc').textContent = `${currentArtist.nameEn} · ${currentArtist.years}`;
+
+  // Load saved history or start fresh
+  const saved = localStorage.getItem(`chat_${artistId}`);
+  if (saved) {
+    chatHistory = JSON.parse(saved);
+  } else {
+    chatHistory = [];
+  }
+
+  renderMessages();
+  renderSuggestions();
+  renderSugPanel();
+  document.getElementById('sugPanel').classList.remove('active');
+  showScreen('chatScreen');
+
+  // Show greeting if new conversation
+  if (chatHistory.length === 0) {
+    addMessage('system', '💡 이 대화는 AI가 역사적 자료를 바탕으로 재현한 것이며, 실제 예술가의 발언이 아닙니다. 대화 내용을 비판적으로 살펴보세요.');
+    addMessage('artist', currentArtist.greeting);
+  }
+
+  setTimeout(() => {
+    document.getElementById('chatInput').focus();
+    scrollToBottom();
+  }, 100);
+}
+
+function exitChat() {
+  saveHistory();
+  document.documentElement.style.setProperty('--accent', '#8b6f47');
+  showScreen('selectScreen');
+}
+
+function saveHistory() {
+  if (currentArtist) {
+    localStorage.setItem(`chat_${currentArtist.id}`, JSON.stringify(chatHistory));
+  }
+}
+
+function clearChat() {
+  if (!confirm('대화 내용을 모두 삭제할까요?')) return;
+  chatHistory = [];
+  if (currentArtist) {
+    localStorage.removeItem(`chat_${currentArtist.id}`);
+    addMessage('system', '💡 이 대화는 AI가 역사적 자료를 바탕으로 재현한 것이며, 실제 예술가의 발언이 아닙니다. 대화 내용을 비판적으로 살펴보세요.');
+    addMessage('artist', currentArtist.greeting);
+  }
+  renderMessages();
+}
+
+function getMsgClass(role) {
+  if (role === 'user') return 'msg user';
+  if (role === 'system') return 'msg system';
+  return 'msg artist';
+}
+
+function renderMessages() {
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = '';
+  chatHistory.forEach(m => {
+    const div = document.createElement('div');
+    div.className = getMsgClass(m.role);
+    div.textContent = m.content;
+    container.appendChild(div);
+  });
+  scrollToBottom();
+}
+
+function addMessage(role, content) {
+  chatHistory.push({ role, content });
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = getMsgClass(role);
+  div.textContent = content;
+  container.appendChild(div);
+  scrollToBottom();
+  saveHistory();
+}
+
+function scrollToBottom() {
+  const container = document.getElementById('chatMessages');
+  requestAnimationFrame(() => { container.scrollTop = container.scrollHeight; });
+}
+
+function renderSuggestions() {
+  const container = document.getElementById('suggestions');
+  if (!currentArtist) return;
+  container.innerHTML = currentArtist.suggestions
+    .map(s => `<button class="sug-chip" onclick="useSuggestion(this)">${s}</button>`)
+    .join('');
+}
+
+function useSuggestion(el) {
+  document.getElementById('chatInput').value = el.textContent;
+  sendMessage();
+}
+
+// ═══════════════════════════════════════
+// Send & API
+// ═══════════════════════════════════════
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || isGenerating) return;
+
+  if (!apiKey) {
+    alert('API 키를 먼저 설정해주세요.');
+    showScreen('setupScreen');
+    return;
+  }
+
+  // Show reminder every 5 user messages
+  const userMsgCount = chatHistory.filter(m => m.role === 'user').length;
+  if (userMsgCount > 0 && userMsgCount % 5 === 0) {
+    addMessage('system', '💡 이 대화는 AI가 역사적 자료를 바탕으로 재현한 것입니다. 실제 예술가의 발언이 아니니 비판적으로 살펴보세요.');
+  }
+
+  addMessage('user', text);
+  input.value = '';
+  input.style.height = 'auto';
+  isGenerating = true;
+  document.getElementById('btnSend').disabled = true;
+
+  // Hide suggestions after first message
+  document.getElementById('suggestions').style.display = 'none';
+
+  // Show typing indicator
+  const container = document.getElementById('chatMessages');
+  const typing = document.createElement('div');
+  typing.className = 'msg typing';
+  typing.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+  container.appendChild(typing);
+  scrollToBottom();
+
+  try {
+    // Build messages for API (convert our format to API format)
+    const apiMessages = chatHistory
+      .filter(m => m.role === 'user' || m.role === 'assistant')
+      .map(m => ({
+        role: m.role === 'user' ? 'user' : 'assistant',
+        content: m.content
+      }));
+
+    // Ensure proper alternation, skip system messages
+    const messagesForApi = [];
+    for (const m of chatHistory) {
+      if (m.role === 'system') continue;
+      const apiRole = m.role === 'user' ? 'user' : 'assistant';
+      messagesForApi.push({ role: apiRole, content: m.content });
+    }
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        system: currentArtist.system,
+        messages: messagesForApi
+      })
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error?.message || '응답을 받지 못했습니다.');
+    }
+
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || '...';
+
+    typing.remove();
+    addMessage('assistant', reply);
+
+  } catch (e) {
+    typing.remove();
+    const errDiv = document.createElement('div');
+    errDiv.className = 'msg system';
+    errDiv.textContent = `⚠️ ${e.message}`;
+    container.appendChild(errDiv);
+    scrollToBottom();
+  } finally {
+    isGenerating = false;
+    document.getElementById('btnSend').disabled = false;
+  }
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+// ═══════════════════════════════════════
+// Export
+// ═══════════════════════════════════════
+function exportChat() {
+  if (!currentArtist || chatHistory.length === 0) {
+    alert('저장할 대화가 없습니다.');
+    return;
+  }
+
+  const date = new Date().toLocaleDateString('ko-KR');
+  let text = `${'='.repeat(40)}\n`;
+  text += `예술가 인터뷰 기록\n`;
+  text += `${'='.repeat(40)}\n`;
+  text += `예술가: ${currentArtist.name} (${currentArtist.nameEn})\n`;
+  text += `날짜: ${date}\n`;
+  text += `${'='.repeat(40)}\n\n`;
+
+  chatHistory.forEach(m => {
+    const label = m.role === 'user' ? '[나]' : `[${currentArtist.name}]`;
+    text += `${label}\n${m.content}\n\n`;
+  });
+
+  text += `${'='.repeat(40)}\n`;
+  text += `이 인터뷰를 바탕으로 감상문을 작성해보세요.\n`;
+
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `인터뷰_${currentArtist.name}_${date.replace(/\./g, '')}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════
+// Guide
+// ═══════════════════════════════════════
+
+// ═══════════════════════════════════════
+// Suggestion Panel
+// ═══════════════════════════════════════
+function toggleSugPanel() {
+  const panel = document.getElementById('sugPanel');
+  panel.classList.toggle('active');
+}
+
+function renderSugPanel() {
+  const list = document.getElementById('sugPanelList');
+  if (!currentArtist) return;
+  list.innerHTML = currentArtist.suggestions
+    .map(s => `<button class="sug-panel-item" onclick="useSugPanel(this)">${s}</button>`)
+    .join('');
+}
+
+function useSugPanel(el) {
+  document.getElementById('chatInput').value = el.textContent;
+  document.getElementById('sugPanel').classList.remove('active');
+  sendMessage();
+}
+
+// ═══════════════════════════════════════
+// Start
+// ═══════════════════════════════════════
+init();
+</script>
+</body>
+</html>
