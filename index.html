@@ -385,6 +385,18 @@ let isGenerating = false;
 // Init
 // ═══════════════════════════════════════
 function init() {
+  // Check for API key in URL hash (e.g. #key=sk-ant-xxxxx)
+  const hash = window.location.hash;
+  if (hash.startsWith('#key=')) {
+    const keyFromUrl = hash.slice(5);
+    if (keyFromUrl) {
+      apiKey = keyFromUrl;
+      localStorage.setItem('artist_interview_api_key', keyFromUrl);
+      // Remove key from URL bar for safety
+      history.replaceState(null, '', window.location.pathname);
+    }
+  }
+
   renderArtistGrid();
   if (apiKey) {
     showScreen('selectScreen');
