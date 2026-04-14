@@ -392,8 +392,17 @@ const ARTISTS = [
 ];
 
 // ═══════════════════════════════════════
+// Proxy (선택) — 배포한 Cloudflare Worker 주소를 넣으면 키 입력 없이 동작
+// 예: "https://artist-interview-proxy.본인계정.workers.dev"
+// 비워두면 기존처럼 브라우저에서 직접 키를 입력하는 방식으로 동작
+// ═══════════════════════════════════════
+const PROXY_URL = "https://artist-interview-proxy.may92kr.workers.dev";
+
+// ═══════════════════════════════════════
 // State
 // ═══════════════════════════════════════
+const USE_PROXY = PROXY_URL.trim().length > 0;
+const API_ENDPOINT = USE_PROXY ? PROXY_URL : 'https://api.anthropic.com/v1/messages';
 let apiKey = localStorage.getItem('artist_interview_api_key') || '';
 let currentArtist = null;
 let chatHistory = []; // {role, content}
@@ -416,7 +425,7 @@ function init() {
   }
 
   renderArtistGrid();
-  if (apiKey) {
+  if (USE_PROXY || apiKey) {
     showScreen('selectScreen');
   } else {
     showScreen('setupScreen');
@@ -444,13 +453,15 @@ async function saveApiKey() {
   err.textContent = '';
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
+        ...(USE_PROXY ? {} : {
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        })
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
@@ -605,7 +616,7 @@ async function sendMessage() {
   const text = input.value.trim();
   if (!text || isGenerating) return;
 
-  if (!apiKey) {
+  if (!USE_PROXY && !apiKey) {
     alert('API 키를 먼저 설정해주세요.');
     showScreen('setupScreen');
     return;
@@ -651,13 +662,15 @@ async function sendMessage() {
       messagesForApi.push({ role: apiRole, content: m.content });
     }
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
+        ...(USE_PROXY ? {} : {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        })
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
