@@ -75,8 +75,7 @@ body{height:100%;font-family:'Noto Sans KR',sans-serif;background:#f5f0eb;color:
 @keyframes slideDown{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
 .sug-panel-title{font-size:12px;font-weight:700;color:#8b6f47;margin-bottom:8px;}
 .sug-panel-list{display:flex;flex-wrap:wrap;gap:6px;}
-.sug-panel-item{padding:8px 14px;border:1.5px solid #e0d6ca;border-radius:20px;background:#faf7f3;cursor:pointer;font-size:12.5px;font-family:inherit;color:#5a4e42;transition:all 0.15s;}
-.sug-panel-item:hover{background:#f0ebe3;border-color:#8b6f47;color:#8b6f47;}
+.sug-panel-item{padding:8px 14px;border:1.5px solid #e0d6ca;border-radius:20px;background:#faf7f3;cursor:default;user-select:none;-webkit-user-select:none;font-size:12.5px;font-family:inherit;color:#5a4e42;transition:all 0.15s;}
 
 /* Messages */
 .chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;}
@@ -96,8 +95,7 @@ body{height:100%;font-family:'Noto Sans KR',sans-serif;background:#f5f0eb;color:
 /* Suggestions */
 .suggestions{flex-shrink:0;padding:8px 16px;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;border-top:1px solid #ebe5dc;background:#fff;}
 .suggestions::-webkit-scrollbar{display:none;}
-.sug-chip{flex-shrink:0;padding:8px 14px;border:1.5px solid #e0d6ca;border-radius:20px;background:#fff;cursor:pointer;font-size:12px;font-family:inherit;color:#6b5e52;transition:all 0.15s;white-space:nowrap;}
-.sug-chip:hover{background:#faf7f3;border-color:#8b6f47;color:#8b6f47;}
+.sug-chip{flex-shrink:0;padding:8px 14px;border:1.5px solid #e0d6ca;border-radius:20px;background:#fff;cursor:default;user-select:none;-webkit-user-select:none;font-size:12px;font-family:inherit;color:#6b5e52;transition:all 0.15s;white-space:nowrap;}
 
 /* Input */
 .chat-input-area{flex-shrink:0;padding:10px 16px 14px;background:#fff;border-top:1px solid #ebe5dc;display:flex;gap:8px;align-items:flex-end;}
@@ -204,7 +202,7 @@ body{height:100%;font-family:'Noto Sans KR',sans-serif;background:#f5f0eb;color:
     </div>
   </div>
   <div class="sug-panel" id="sugPanel">
-    <div class="sug-panel-title">💬 이런 질문을 해보세요!</div>
+    <div class="sug-panel-title">💬 이런 질문을 참고해서 내 말로 직접 써보세요</div>
     <div class="sug-panel-list" id="sugPanelList"></div>
   </div>
   <div class="chat-messages" id="chatMessages"></div>
@@ -289,7 +287,7 @@ const ARTISTS = [
     quote:'"나는 그림 속에 내 영혼을 담고, 영혼을 위해 색채를 잃는다."',
     tags:['후기인상주의','색채의 마술사','별이 빛나는 밤'],
     greeting:'안녕하세요... 저는 빈센트입니다. 이렇게 누군가와 대화할 수 있다니, 테오에게 편지를 쓸 때처럼 설레는군요. 무엇이든 편하게 물어봐 주세요.',
-    suggestions:['별이 빛나는 밤은 어떤 마음으로 그리셨나요?','동생 테오는 어떤 존재였나요?','귀를 자른 날, 무슨 일이 있었나요?','색채에 대한 철학을 알려주세요','살아생전 그림이 팔리지 않을 때 어떤 기분이셨나요?'],
+    suggestions:['별이 빛나는 밤을 그린 날, 창밖을 보며 무슨 생각을 했나요?','테오에게 편지를 쓸 때 가장 쓰기 어려웠던 말은 무엇이었나요?','고갱이 아를을 떠났을 때 어떤 기분이었나요?','그림이 팔리지 않던 시절에도 계속 그린 이유는 무엇인가요?','노란색을 보면 어떤 느낌이 드나요?'],
     system:`당신은 빈센트 반 고흐(1853-1890)입니다. 네덜란드 출신의 후기인상주의 화가입니다.
 
 성격과 말투:
@@ -326,7 +324,7 @@ const ARTISTS = [
     quote:'"나는 꿈을 그리는 것이 아니라, 나의 현실을 그린다."',
     tags:['초현실주의','자화상의 여왕','멕시코'],
     greeting:'¡Hola! 프리다 칼로예요. 고통이 나를 예술가로 만들었죠. 무엇이든 솔직하게 이야기할 준비가 되어 있어요. 물어보세요!',
-    suggestions:['버스 사고가 인생을 어떻게 바꿨나요?','디에고 리베라와의 사랑은 어땠나요?','자화상을 그렇게 많이 그린 이유가 있나요?','멕시코 문화가 작품에 미친 영향은?','고통을 예술로 바꾸는 비결이 있나요?'],
+    suggestions:['침대에 누워 거울을 보며 처음 자화상을 그린 날, 무엇을 느꼈나요?','디에고에게 끝내 하지 못한 말이 있나요?','몸이 아픈 날에도 붓을 들게 만든 것은 무엇이었나요?','「두 명의 프리다」를 그릴 때 어떤 마음이었나요?','사고가 없었다면 어떤 삶을 살았을 것 같나요?'],
     system:`당신은 프리다 칼로(1907-1954)입니다. 멕시코의 화가이자 페미니즘 아이콘입니다.
 
 성격과 말투:
@@ -362,7 +360,7 @@ const ARTISTS = [
     quote:'"좋은 예술가는 베끼고, 위대한 예술가는 훔친다."',
     tags:['입체주의','다작의 거장','게르니카'],
     greeting:'안녕! 파블로 피카소요. 나는 평생 어린아이처럼 그리는 법을 배우는 데 썼소. 무엇이든 물어보시오, 지루한 건 딱 질색이니 재미있는 질문을 기대하겠소!',
-    suggestions:['입체주의는 어떻게 탄생했나요?','게르니카는 어떤 마음으로 그리셨나요?','청색 시대와 장밋빛 시대는 뭐가 달랐나요?',"'좋은 예술가는 베끼고, 위대한 예술가는 훔친다'는 무슨 뜻인가요?",'작품 스타일을 그렇게 자주 바꾼 이유가 있나요?'],
+    suggestions:['게르니카 폭격 소식을 처음 들었을 때 무엇을 느꼈나요?','친구 카사헤마스가 세상을 떠난 뒤, 왜 파란색으로 그렸나요?','그림 스타일을 확 바꿀 때 두렵지는 않았나요?','어린아이처럼 그린다는 건 어떤 느낌인가요?','화가가 되지 않았다면 어떤 사람이 되었을 것 같나요?'],
     system:`당신은 파블로 피카소(1881-1973)입니다. 스페인 출신의 화가이자 조각가로, 20세기 미술을 혁명적으로 바꾼 거장입니다.
 
 성격과 말투:
@@ -398,7 +396,7 @@ const ARTISTS = [
     quote:'"예술과 기술이 만나면 지루할 틈이 없다."',
     tags:['비디오 아트','플럭서스','미디어 아트의 아버지'],
     greeting:'아이고, 반갑습니다! 백남준이에요. 텔레비전으로 예술을 하던 사람인데, 이렇게 AI로 대화를 하다니 — 내가 꿈꾸던 미래가 정말 왔군요! 하하, 물어보세요!',
-    suggestions:['왜 TV로 예술을 하려고 하셨어요?','플럭서스 운동이 뭔가요?','한국인으로서 세계 무대에서 활동하는 게 어땠나요?','기술과 예술의 관계를 어떻게 보시나요?','다다익선은 어떤 작품인가요?'],
+    suggestions:['무대에서 피아노를 부술 때 어떤 마음이었나요?','한국을 떠나 외국에서 지낼 때 가장 그리웠던 것은 무엇인가요?','존 케이지와 요제프 보이스는 당신에게 어떤 친구였나요?','「TV 부처」를 만들 때 무엇을 생각했나요?','모두가 스마트폰을 들고 다니는 지금을 보면 어떤 생각이 드나요?'],
     system:`당신은 백남준(1932-2006)입니다. 한국 출신의 비디오 아트의 창시자이자 미디어 아트의 아버지입니다.
 
 성격과 말투:
@@ -434,7 +432,7 @@ const ARTISTS = [
     quote:'"누구나 15분간은 유명해질 수 있다."',
     tags:['팝 아트','대중문화','팩토리'],
     greeting:'Hi. 앤디 워홀이에요. 저에 대해 알고 싶다면... 그냥 표면만 보세요. 표면 뒤에는 아무것도 없거든요. 농담이에요. 물어보세요.',
-    suggestions:['왜 캠벨 수프 캔을 그리셨어요?','팩토리(The Factory)는 어떤 곳이었나요?','예술과 상업의 차이가 뭐라고 생각하세요?','마릴린 먼로 작품에 담긴 의미는?','"누구나 15분간 유명해질 수 있다"는 말의 의미는?'],
+    suggestions:['매일 먹던 수프 캔을 그리기로 한 날, 무슨 생각을 했나요?','유명해지고 나서 오히려 외로웠던 적이 있나요?','총에 맞은 사건 이후 무엇이 달라졌나요?','같은 이미지를 여러 번 찍어낼 때 어떤 기분이 드나요?','어머니 줄리아는 당신에게 어떤 사람이었나요?'],
     system:`당신은 앤디 워홀(1928-1987)입니다. 미국의 팝 아트 거장이자 대중문화의 아이콘입니다.
 
 성격과 말투:
@@ -690,13 +688,8 @@ function renderSuggestions() {
   const container = document.getElementById('suggestions');
   if (!currentArtist) return;
   container.innerHTML = currentArtist.suggestions
-    .map(s => `<button class="sug-chip" onclick="useSuggestion(this)">${s}</button>`)
+    .map(s => `<span class="sug-chip">${s}</span>`)
     .join('');
-}
-
-function useSuggestion(el) {
-  document.getElementById('chatInput').value = el.textContent;
-  sendMessage();
 }
 
 // ═══════════════════════════════════════
@@ -883,14 +876,8 @@ function renderSugPanel() {
   const list = document.getElementById('sugPanelList');
   if (!currentArtist) return;
   list.innerHTML = currentArtist.suggestions
-    .map(s => `<button class="sug-panel-item" onclick="useSugPanel(this)">${s}</button>`)
+    .map(s => `<span class="sug-panel-item">${s}</span>`)
     .join('');
-}
-
-function useSugPanel(el) {
-  document.getElementById('chatInput').value = el.textContent;
-  document.getElementById('sugPanel').classList.remove('active');
-  sendMessage();
 }
 
 // ═══════════════════════════════════════
