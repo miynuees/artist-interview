@@ -145,6 +145,18 @@ body{height:100%;font-family:'Noto Sans KR',sans-serif;background:#f5f0eb;color:
 </head>
 <body>
 
+<!-- ═══════════════════════ LOGIN SCREEN ═══════════════════════ -->
+<div class="screen setup-screen" id="loginScreen">
+  <div class="setup-box">
+    <h2>🎨 예술가 인터뷰</h2>
+    <p>학번과 이름으로 들어와요.<br>다음에도 같은 학번·이름으로 들어오면 대화가 이어져요.</p>
+    <input class="setup-input" id="loginSid" inputmode="numeric" placeholder="학번 (예: 20201)" style="margin-bottom:8px;">
+    <input class="setup-input" id="loginName" placeholder="이름" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn-primary" id="btnLogin" onclick="doLogin()">들어가기</button>
+    <div class="setup-error" id="loginError"></div>
+  </div>
+</div>
+
 <!-- ═══════════════════════ SETUP SCREEN ═══════════════════════ -->
 <div class="screen setup-screen" id="setupScreen">
   <div class="setup-box">
@@ -170,7 +182,7 @@ body{height:100%;font-family:'Noto Sans KR',sans-serif;background:#f5f0eb;color:
     <p>대화하고 싶은 예술가를 선택하세요</p>
   </div>
   <div class="select-top-bar">
-    <div></div>
+    <div id="whoBox" style="font-size:13px;color:#8a7d72;"></div>
     <button class="btn-icon" onclick="showScreen('setupScreen')" title="API 키 설정">⚙️</button>
   </div>
   <div class="artist-grid" id="artistGrid"></div>
@@ -202,7 +214,66 @@ body{height:100%;font-family:'Noto Sans KR',sans-serif;background:#f5f0eb;color:
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
+// ═══════════════════════════════════════
+// 학생 로그인 (방탈출 제작도구와 같은 계정 · 같은 주소라 한 번 로그인하면 둘 다 들어가짐)
+// ═══════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyBtSooSc-eg4zMHQ_QF-ErmYJmtaYT1Fkg",
+  authDomain: "limi-88231.firebaseapp.com",
+  projectId: "limi-88231",
+  storageBucket: "limi-88231.firebasestorage.app",
+};
+let db = null;
+try { firebase.initializeApp(firebaseConfig); db = firebase.firestore(); } catch (e) { console.error(e); }
+const LOGIN_KEY = 'artclassLogin';
+function getLogin(){ try { return JSON.parse(localStorage.getItem(LOGIN_KEY) || 'null'); } catch { return null; } }
+let me = getLogin();          // {sid, name}
+let serverChats = {};         // 서버에 저장된 예술가별 대화
+
+async function doLogin() {
+  const sid = document.getElementById('loginSid').value.trim();
+  const name = document.getElementById('loginName').value.trim();
+  const err = document.getElementById('loginError');
+  const btn = document.getElementById('btnLogin');
+  if (!/^\d{4,6}$/.test(sid)) { err.textContent = '학번을 숫자로 넣어주세요.'; return; }
+  if (!name) { err.textContent = '이름을 넣어주세요.'; return; }
+  btn.disabled = true; err.textContent = '';
+  try {
+    const ref = db.collection('artclass_students').doc(sid);
+    const snap = await ref.get();
+    if (snap.exists && snap.data().name && snap.data().name !== name) {
+      err.textContent = '이 학번은 다른 이름으로 등록되어 있어요. 학번을 확인하거나 선생님께 말해주세요.'; return;
+    }
+    await ref.set({ sid, name, updatedAt: Date.now() }, { merge: true });
+    me = { sid, name };
+    localStorage.setItem(LOGIN_KEY, JSON.stringify(me));
+    await afterLogin();
+  } catch (e) {
+    err.textContent = '연결에 실패했어요. 인터넷을 확인해주세요.';
+  } finally { btn.disabled = false; }
+}
+
+async function afterLogin() {
+  document.getElementById('whoBox').innerHTML =
+    `${me.sid} ${me.name} · <a href="#" onclick="logout();return false;" style="color:#8b6f47;">로그아웃</a>`;
+  try {
+    const snap = await db.collection('artclass_interview').doc(me.sid).get();
+    serverChats = (snap.exists && snap.data().chats) || {};
+  } catch (e) { serverChats = {}; }
+  showScreen('selectScreen');
+}
+
+function logout() {
+  if (!confirm('로그아웃할까요?')) return;
+  localStorage.removeItem(LOGIN_KEY);
+  me = null; serverChats = {};
+  ['loginSid','loginName'].forEach(id => document.getElementById(id).value = '');
+  showScreen('loginScreen');
+}
+
 // ═══════════════════════════════════════
 // Artist Data
 // ═══════════════════════════════════════
@@ -425,8 +496,10 @@ function init() {
   }
 
   renderArtistGrid();
-  if (USE_PROXY || apiKey) {
-    showScreen('selectScreen');
+  if (!me) {
+    showScreen('loginScreen');
+  } else if (USE_PROXY || apiKey) {
+    afterLogin();
   } else {
     showScreen('setupScreen');
   }
@@ -513,8 +586,11 @@ function startChat(artistId) {
   document.getElementById('chatArtistDesc').textContent = `${currentArtist.nameEn} · ${currentArtist.years}`;
 
   // Load saved history or start fresh
-  const saved = localStorage.getItem(`chat_${artistId}`);
-  if (saved) {
+  // 서버에 저장된 대화 우선 (다른 컴퓨터에서 이어하기)
+  const saved = localStorage.getItem(`chat_${me.sid}_${artistId}`);
+  if (serverChats[artistId]) {
+    chatHistory = serverChats[artistId].slice();
+  } else if (saved) {
     chatHistory = JSON.parse(saved);
   } else {
     chatHistory = [];
@@ -545,8 +621,14 @@ function exitChat() {
 }
 
 function saveHistory() {
-  if (currentArtist) {
-    localStorage.setItem(`chat_${currentArtist.id}`, JSON.stringify(chatHistory));
+  if (currentArtist && me) {
+    localStorage.setItem(`chat_${me.sid}_${currentArtist.id}`, JSON.stringify(chatHistory));
+    serverChats[currentArtist.id] = chatHistory.slice();
+    // 선생님이 볼 수 있도록 서버에도 저장
+    db.collection('artclass_interview').doc(me.sid).set({
+      sid: me.sid, name: me.name, updatedAt: Date.now(),
+      chats: { [currentArtist.id]: chatHistory },
+    }, { merge: true }).catch(e => console.error('저장 실패', e));
   }
 }
 
@@ -554,7 +636,6 @@ function clearChat() {
   if (!confirm('대화 내용을 모두 삭제할까요?')) return;
   chatHistory = [];
   if (currentArtist) {
-    localStorage.removeItem(`chat_${currentArtist.id}`);
     addMessage('system', '💡 이 대화는 AI가 역사적 자료를 바탕으로 재현한 것이며, 실제 예술가의 발언이 아닙니다. 대화 내용을 비판적으로 살펴보세요.');
     addMessage('artist', currentArtist.greeting);
   }
@@ -757,6 +838,7 @@ function exportChat() {
   <div style="text-align:center;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #e0d6ca;">
     <div style="font-size:28px;margin-bottom:6px;">${currentArtist.emoji}</div>
     <h1 style="font-size:22px;color:#3a2f25;margin:0 0 4px;">예술가 인터뷰 기록</h1>
+    <div style="font-size:13px;color:#5a4e42;margin-bottom:4px;">${me ? me.sid + ' ' + me.name : ''}</div>
     <div style="font-size:13px;color:#8a7d72;">${currentArtist.name} (${currentArtist.nameEn})</div>
     <div style="font-size:12px;color:#a09688;margin-top:4px;">${date} ${time}</div>
   </div>
