@@ -33,6 +33,7 @@ body{height:100%;font-family:'Noto Sans KR',sans-serif;background:#f5f0eb;color:
 .btn-primary:hover{background:#7a6140;transform:translateY(-1px);}
 .btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
 .setup-error{color:#c0392b;font-size:12px;margin-top:10px;min-height:18px;}
+#loginError:not(:empty){font-size:14px;font-weight:700;background:#fdecea;border-radius:10px;padding:10px 12px;margin-top:12px;}
 .setup-skip{font-size:12px;color:#a09688;margin-top:14px;cursor:pointer;text-decoration:underline;}
 
 /* ── Selection Screen ── */
@@ -234,13 +235,15 @@ let me = getLogin();          // {sid, name}
 let serverChats = {};         // 서버에 저장된 예술가별 대화
 
 async function doLogin() {
-  const sid = document.getElementById('loginSid').value.trim();
-  const name = document.getElementById('loginName').value.trim();
+  // 학번은 숫자만, 이름은 띄어쓰기 없이 (예: "2-01 01" → "20101", "김 혜화" → "김혜화")
+  const sid = document.getElementById('loginSid').value.replace(/\D/g, '');
+  const name = document.getElementById('loginName').value.replace(/\s/g, '');
   const err = document.getElementById('loginError');
   const btn = document.getElementById('btnLogin');
-  if (!/^\d{4,6}$/.test(sid)) { err.textContent = '학번을 숫자로 넣어주세요.'; return; }
+  if (!/^\d{4,6}$/.test(sid)) { err.textContent = '학번을 숫자 5자리로 넣어주세요. (예: 20201)'; return; }
   if (!name) { err.textContent = '이름을 넣어주세요.'; return; }
-  btn.disabled = true; err.textContent = '';
+  if (!db) { err.textContent = '학교 인터넷에서 저장소에 연결하지 못했어요. 새로고침(Ctrl+F5) 후 다시 해보고, 계속 안 되면 선생님께 말해주세요.'; return; }
+  btn.disabled = true; btn.textContent = '들어가는 중...'; err.textContent = '';
   try {
     const ref = db.collection('artclass_students').doc(sid);
     const snap = await ref.get();
@@ -253,7 +256,7 @@ async function doLogin() {
     await afterLogin();
   } catch (e) {
     err.textContent = '연결에 실패했어요. 인터넷을 확인해주세요.';
-  } finally { btn.disabled = false; }
+  } finally { btn.disabled = false; btn.textContent = '들어가기'; }
 }
 
 async function afterLogin() {
